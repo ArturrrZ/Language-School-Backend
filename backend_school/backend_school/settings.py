@@ -139,4 +139,4 @@ AUTH_COOKIE_ACCESS = 'access_token'
 AUTH_COOKIE_REFRESH = 'refresh_token'
 AUTH_COOKIE_HTTP_ONLY = True
 AUTH_COOKIE_SECURE = not DEBUG
-AUTH_COOKIE_SAMESITE = 'Lax'
+AUTH_COOKIE_SAMESITE = 'None' # Adjust as needed (e.g.,'Lax' if same-site, 'Strict' or 'None' if using cross-site requests)
