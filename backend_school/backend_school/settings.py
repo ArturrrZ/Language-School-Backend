@@ -1,4 +1,5 @@
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -140,3 +141,23 @@ AUTH_COOKIE_REFRESH = 'refresh_token'
 AUTH_COOKIE_HTTP_ONLY = True
 AUTH_COOKIE_SECURE = not DEBUG
 AUTH_COOKIE_SAMESITE = 'None' # Adjust as needed (e.g.,'Lax' if same-site, 'Strict' or 'None' if using cross-site requests)
+
+# Cache (LocMem in dev, Redis when REDIS_URL is provided)
+REDIS_URL = os.getenv('REDIS_URL')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'school-backend-dev-cache',
+        }
+    }
+
+TEACHER_LIST_CACHE_TTL_SECONDS = 300
+TEACHER_LIST_CACHE_KEY = 'teachers:list:v1'

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.cache import cache
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework import status
@@ -41,9 +42,20 @@ class TeacherListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        cache_key = getattr(settings, 'TEACHER_LIST_CACHE_KEY', 'teachers:list:v1')
+        cached_data = cache.get(cache_key)
+        if cached_data is not None:
+            return Response(cached_data)
+        print("DB QUERY: Fetching teachers from database")
         teachers = Teacher.objects.select_related('user').all()
         serializer = TeacherSerializer(teachers, many=True)
-        return Response(serializer.data)
+        data = serializer.data
+        cache.set(
+            cache_key,
+            data,
+            timeout=getattr(settings, 'TEACHER_LIST_CACHE_TTL_SECONDS', 300),
+        )
+        return Response(data)
 
 #---------------------------------------------------------------------------
 class RegisterView(APIView):
