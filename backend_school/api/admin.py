@@ -35,4 +35,9 @@ class TeacherAdmin(admin.ModelAdmin):
         if not change and not obj.user.is_teacher:
             obj.user.is_teacher = True
             obj.user.save(update_fields=['is_teacher'])
-
+    def delete_model(self, request, obj):
+        user = obj.user
+        super().delete_model(request, obj)
+        if user.is_teacher:
+            user.is_teacher = False
+            user.save()    
