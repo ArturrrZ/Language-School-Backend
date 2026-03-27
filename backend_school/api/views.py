@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .models import Teacher
+from .serializers import TeacherSerializer
+
 User = get_user_model()
 
 
@@ -34,14 +37,15 @@ def _clear_auth_cookies(response):
     response.delete_cookie(settings.AUTH_COOKIE_ACCESS)
     response.delete_cookie(settings.AUTH_COOKIE_REFRESH)
 
-
-class TestView(APIView):
+class TeacherListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        return Response({"message": "Hello, world!"})
+        teachers = Teacher.objects.select_related('user').all()
+        serializer = TeacherSerializer(teachers, many=True)
+        return Response(serializer.data)
 
-
+#---------------------------------------------------------------------------
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
