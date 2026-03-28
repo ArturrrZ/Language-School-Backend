@@ -8,8 +8,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Teacher
-from .serializers import TeacherSerializer
+from .models import Teacher, TeacherAvailability, TrialLessonRequest
+from .serializers import (
+    TeacherAvailabilitySerializer,
+    TeacherSerializer,
+    TrialLessonRequestCreateSerializer,
+    TrialLessonRequestSerializer,
+)
 
 User = get_user_model()
 
@@ -57,6 +62,43 @@ class TeacherListView(APIView):
         )
         return Response(data)
 
+
+class TeacherAvailabilityView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, teacher_id: int):
+        print(f"DB QUERY: Fetching availability for teacher_id={teacher_id}")
+        availability = TeacherAvailability.objects.filter(
+            teacher_id=teacher_id,
+            is_active=True,
+        ).order_by('weekday', 'start_time')
+        serializer = TeacherAvailabilitySerializer(availability, many=True)
+        return Response(serializer.data)
+
+
+class TrialLessonRequestCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = TrialLessonRequestCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        trial_request = serializer.save()
+        return Response(
+            TrialLessonRequestSerializer(trial_request).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class MyTrialLessonRequestListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        queryset = TrialLessonRequest.objects.select_related('teacher__user', 'student').filter(
+            student=request.user
+        )
+        serializer = TrialLessonRequestSerializer(queryset, many=True)
+        return Response(serializer.data)
+
 #---------------------------------------------------------------------------
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -100,6 +142,7 @@ class LoginView(APIView):
             )
 
         refresh = RefreshToken.for_user(user)
+        print(f"User {user.username} logged in. Issuing tokens.")
         response = Response({"detail": "Logged in."}, status=status.HTTP_200_OK)
         _set_auth_cookies(response, str(refresh.access_token), str(refresh))
         return response
