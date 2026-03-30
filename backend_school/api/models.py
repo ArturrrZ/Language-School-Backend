@@ -65,8 +65,8 @@ class TeacherAvailability(models.Model):
 
 	teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='availabilities')
 	weekday = models.PositiveSmallIntegerField(choices=Weekday.choices)
-	start_time = models.TimeField()
-	end_time = models.TimeField()
+	start_time = models.TimeField(help_text='Start time of availability window in Pacific Time')
+	end_time = models.TimeField(help_text='End time of availability window in Pacific Time')
 	is_active = models.BooleanField(default=True)
 
 	class Meta:

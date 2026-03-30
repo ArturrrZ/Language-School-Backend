@@ -40,6 +40,11 @@ class TeacherAvailabilitySerializer(serializers.ModelSerializer):
         fields = ('id', 'weekday', 'weekday_label', 'start_time', 'end_time', 'is_active')
 
 
+class AvailableSlotSerializer(serializers.Serializer):
+    start_at = serializers.DateTimeField()
+    end_at = serializers.DateTimeField()
+
+
 class TrialLessonRequestCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrialLessonRequest
