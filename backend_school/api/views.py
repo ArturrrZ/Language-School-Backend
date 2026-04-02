@@ -14,6 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Teacher, TeacherAvailability, TrialLessonRequest
 from .serializers import (
     AvailableSlotSerializer,
+    MeSerializer,
     TeacherAvailabilitySerializer,
     TeacherSerializer,
     TrialLessonRequestCreateSerializer,
@@ -195,6 +196,16 @@ class MyTrialLessonRequestListView(APIView):
         return Response(serializer.data)
 
 #---------------------------------------------------------------------------
+class MeView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({"auth": False})
+        serializer = MeSerializer(request.user, context={'request': request})
+        return Response({"auth": True, **serializer.data})
+
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 

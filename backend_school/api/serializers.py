@@ -122,3 +122,32 @@ class TrialLessonDecisionSerializer(serializers.Serializer):
         )
     )
     admin_note = serializers.CharField(required=False, allow_blank=True)
+
+
+class MeSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source='pk')
+    username = serializers.CharField()
+    email = serializers.EmailField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone = serializers.CharField()
+    is_student = serializers.BooleanField()
+    is_teacher = serializers.BooleanField()
+    is_parent = serializers.BooleanField()
+    is_staff = serializers.BooleanField()
+    teacher_id = serializers.SerializerMethodField()
+    profile_picture = serializers.SerializerMethodField()
+
+    def get_teacher_id(self, obj):
+        try:
+            return obj.teacher_profile.id
+        except Teacher.DoesNotExist:
+            return None
+
+    def get_profile_picture(self, obj):
+        request = self.context.get('request')
+        if not obj.profile_picture:
+            return None
+        if request:
+            return request.build_absolute_uri(obj.profile_picture.url)
+        return obj.profile_picture.url
