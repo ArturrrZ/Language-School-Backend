@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from .services import create_trial_lesson_request
 from .models import Teacher, TeacherAvailability, TrialLessonRequest
 from .serializers import (
     AvailableSlotSerializer,
@@ -178,7 +178,14 @@ class TrialLessonRequestCreateView(APIView):
     def post(self, request):
         serializer = TrialLessonRequestCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        trial_request = serializer.save()
+        # trial_request = serializer.save()
+        trial_request = create_trial_lesson_request(
+            student=request.user,
+            teacher=serializer.validated_data['teacher'],
+            start_at=serializer.validated_data['start_at'],
+            end_at=serializer.validated_data['end_at'],
+            student_note=serializer.validated_data.get('student_note', ''),
+        )
         return Response(
             TrialLessonRequestSerializer(trial_request).data,
             status=status.HTTP_201_CREATED,

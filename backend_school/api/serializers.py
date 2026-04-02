@@ -77,9 +77,9 @@ class TrialLessonRequestCreateSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def create(self, validated_data):
-        request = self.context['request']
-        return TrialLessonRequest.objects.create(student=request.user, **validated_data)
+    # def create(self, validated_data):
+    #     request = self.context['request']
+    #     return TrialLessonRequest.objects.create(student=request.user, **validated_data)
 
 
 class TrialLessonRequestSerializer(serializers.ModelSerializer):
