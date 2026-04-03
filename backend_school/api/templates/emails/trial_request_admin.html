@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+    <h2>New Trial Lesson Request</h2>
+    
+    <p><strong>Student:</strong> {{ student_name }}</p>
+    <p><strong>Teacher:</strong> {{ teacher_name }}</p>
+    <p><strong>Start:</strong> {{ start_at }}</p>
+    <p><strong>End:</strong> {{ end_at }}</p>
+    <p><strong>Request ID:</strong> {{ trial_request_id }}</p>
+    
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+    
+    <p>Manage this trial lesson request in the admin panel:</p>
+    
+    <div style="margin-top: 20px;">
+        <a href="{{ admin_url }}" style="display:inline-block; padding: 12px 24px; background-color: #1976D2; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            📋 Manage Request
+        </a>
+    </div>
+    
+    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+    <p style="font-size: 12px; color: #666;">Admin Panel: <a href="{{ admin_home }}">{{ admin_home }}</a></p>
+</body>
+</html>
