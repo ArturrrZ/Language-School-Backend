@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .services import create_trial_lesson_request
 from .models import Teacher, TeacherAvailability, TrialLessonRequest
+from django.views.decorators.csrf import csrf_exempt
 from .serializers import (
     AvailableSlotSerializer,
     MeSerializer,
@@ -153,6 +154,18 @@ class TrialLessonRequestCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+
+        existing_trial_lesson_same_date = TrialLessonRequest.objects.filter(
+            student=request.user,
+            start_at__date=request.data.get('start_at', '')[:10],  # crude way to extract date
+            status__in=OCCUPIED_TRIAL_LESSON_STATUSES,
+        ).exists()
+        if existing_trial_lesson_same_date:
+            return Response(
+                {'detail': 'You already have a trial lesson request on this date.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = TrialLessonRequestCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         # trial_request = serializer.save()
@@ -180,6 +193,7 @@ class MyTrialLessonRequestListView(APIView):
         return Response(serializer.data)
 
 #---------------------------------------------------------------------------
+
 class MeView(APIView):
     permission_classes = [AllowAny]
 
