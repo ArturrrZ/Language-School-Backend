@@ -246,18 +246,4 @@ class LogoutView(APIView):
         auth_logout(request)
         response = Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
         return response
-
-
-class RefreshTokenView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        if request.user.is_authenticated:
-            request.session.cycle_key()
-            get_token(request)
-            return Response({"detail": "Session refreshed."}, status=status.HTTP_200_OK)
-        return Response(
-            {"detail": "Not authenticated."},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
     
