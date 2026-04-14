@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_celery_beat',
+    'django_celery_results',
     'api',
 ]
 
@@ -178,3 +180,11 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-repl
 TRIAL_REQUEST_NOTIFICATION_EMAIL = os.getenv('TRIAL_REQUEST_NOTIFICATION_EMAIL', EMAIL_HOST_USER)
 
 SITE_ORIGIN = os.getenv('SITE_ORIGIN', 'http://127.0.0.1:8000')
+
+# Celery
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'django-db')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
