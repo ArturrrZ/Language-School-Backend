@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.conf import settings
 from .models import TrialLessonRequest
-from .tasks import test_print_message
+# from .tasks import test_print_message
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -35,5 +35,5 @@ def trial_lesson_request_post_save(sender, instance, created, **kwargs):
         # Add your logic here for when a trial lesson request is updated
         print(f'TrialLessonRequest with ID: {instance.id} has been updated')
         print(f'Current status: {instance.status}')
-        test_print_message.delay(instance.id, instance.status)
+        # test_print_message.delay(instance.id, instance.status)
 
