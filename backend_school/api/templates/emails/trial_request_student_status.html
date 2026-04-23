@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; color: #1f2937; max-width: 620px; margin: 0 auto; background: #f8fafc; padding: 20px;">
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 24px;">
+        <h2 style="margin-top: 0; color: #111827;">Your trial lesson request has an update</h2>
+
+        <p style="margin: 0 0 14px 0;">Hi {{ student_name }},</p>
+        <p style="margin: 0 0 14px 0;">Request <strong>#{{ trial_request_id }}</strong> with <strong>{{ teacher_name }}</strong> has changed status.</p>
+
+        <div style="background: #f3f4f6; border-radius: 8px; padding: 14px; margin: 16px 0;">
+            <p style="margin: 0 0 8px 0;"><strong>Previous status:</strong> {{ old_status_label }}</p>
+            <p style="margin: 0;"><strong>New status:</strong> {{ new_status_label }}</p>
+        </div>
+
+        <p style="margin: 0 0 8px 0;"><strong>Lesson time:</strong> {{ start_at }} to {{ end_at }}</p>
+        {% if admin_note %}
+        <p style="margin: 8px 0 0 0;"><strong>Admin note:</strong> {{ admin_note }}</p>
+        {% endif %}
+
+        <div style="margin-top: 24px;">
+            <a href="{{ request_url }}" style="display:inline-block; padding: 12px 22px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Check My Trial Lessons
+            </a>
+        </div>
+
+        <p style="font-size: 12px; color: #6b7280; margin-top: 20px;">
+            If the button does not work, use this link:<br>
+            <a href="{{ request_url }}" style="color: #2563eb;">{{ request_url }}</a>
+        </p>
+    </div>
+</body>
+</html>

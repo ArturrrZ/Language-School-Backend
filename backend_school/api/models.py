@@ -121,6 +121,8 @@ class TrialLessonRequest(models.Model):
 			raise ValidationError({'end_at': 'End datetime must be after start datetime.'})
 		if self.start_at <= timezone.now():
 			raise ValidationError({'start_at': 'Trial lesson must be in the future.'})
+		if self.status == self.Status.REJECTED and not self.admin_note:
+			raise ValidationError({'admin_note': 'Admin note is required when rejecting a trial lesson request.'})
 
 	def __str__(self) -> str:
 		return f'TrialRequest #{self.pk} | {self.student} -> {self.teacher} ({self.status})'
