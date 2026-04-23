@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import Teacher, TeacherAvailability, TrialLessonRequest, User
+from .models import Teacher, TeacherAvailability, TrialLessonRequest, User, Notification
 
 
 @admin.register(User)
@@ -73,3 +73,9 @@ class TrialLessonRequestAdmin(admin.ModelAdmin):
     @admin.action(description='Set status: cancelled')
     def mark_cancelled(self, request, queryset):
         queryset.update(status=TrialLessonRequest.Status.CANCELLED)
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'type', 'message', 'is_read', 'created_at')
+    list_filter = ('type', 'is_read', 'created_at')
+    search_fields = ('user__username', 'user__email', 'message')

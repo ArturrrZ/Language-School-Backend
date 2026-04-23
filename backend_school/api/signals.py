@@ -29,11 +29,17 @@ def trial_lesson_request_post_save(sender, instance, created, **kwargs):
     
     print(instance.status)
     if created:
+        pass
         # Add your logic here for when a new trial lesson request is created
-        print(f'New TrialLessonRequest created with ID: {instance.id}')
+        # print(f'New TrialLessonRequest created with ID: {instance.id}')
     else:
         # Add your logic here for when a trial lesson request is updated
-        print(f'TrialLessonRequest with ID: {instance.id} has been updated')
-        print(f'Current status: {instance.status}')
+        # print(f'TrialLessonRequest with ID: {instance.id} has been updated')
+        # print(f'Current status: {instance.status}')
         # test_print_message.delay(instance.id, instance.status)
-
+        if instance.status == TrialLessonRequest.Status.TEACHER_CONFIRMED or instance.status == TrialLessonRequest.Status.ADMIN_APPROVED:
+            print(f'TrialLessonRequest with ID: {instance.id} has been confirmed.')
+            #send email to student about confirmation
+        elif instance.status == TrialLessonRequest.Status.REJECTED:
+            print(f'TrialLessonRequest with ID: {instance.id} has been rejected.')
+            #send email to student about rejection

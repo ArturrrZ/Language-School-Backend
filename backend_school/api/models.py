@@ -124,3 +124,17 @@ class TrialLessonRequest(models.Model):
 
 	def __str__(self) -> str:
 		return f'TrialRequest #{self.pk} | {self.student} -> {self.teacher} ({self.status})'
+	
+
+class Notification(models.Model):
+	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+	type = models.CharField(max_length=50, blank=True, null=True)
+	message = models.TextField()
+	is_read = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ('-created_at',)
+
+	def __str__(self) -> str:
+		return f'Notification for {self.user} at {self.created_at}'
