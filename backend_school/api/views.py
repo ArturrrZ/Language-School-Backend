@@ -7,6 +7,7 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import get_user_model
 from django.middleware.csrf import get_token
+from django.utils.decorators import method_decorator
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -192,7 +193,57 @@ class MyTrialLessonRequestListView(APIView):
         serializer = TrialLessonRequestSerializer(queryset, many=True)
         return Response(serializer.data)
 
-#---------------------------------------------------------------------------
+
+
+#-----------------------------Teacher----------------------------------------------
+
+class TeacherTrialLessonRequestListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        teacher = Teacher.objects.filter(user=request.user).first()
+        if not teacher:
+            return Response({'detail': 'Teacher profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        queryset = TrialLessonRequest.objects.select_related('teacher__user', 'student').filter(
+            teacher=teacher, status=TrialLessonRequest.Status.PENDING
+        )
+        serializer = TrialLessonRequestSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class TeacherTrialLessonRequestUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, trial_request_id: int):
+        teacher = Teacher.objects.filter(user=request.user).first()
+        if not teacher:
+            return Response({'detail': 'Teacher profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        trial_request = TrialLessonRequest.objects.filter(
+            id=trial_request_id,
+            teacher=teacher,
+            status__in=[
+                TrialLessonRequest.Status.PENDING,
+                TrialLessonRequest.Status.TEACHER_CONFIRMED,
+                TrialLessonRequest.Status.ADMIN_APPROVED,
+                TrialLessonRequest.Status.REJECTED,
+            ],
+        ).first()
+        if not trial_request:
+            return Response({'detail': 'Trial lesson request not found or cannot be updated.'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status')
+        if new_status not in dict(TrialLessonRequest.Status.choices):
+            return Response({'detail': 'Invalid status value.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        trial_request.status = new_status
+        teacher_note = request.data.get('teacher_note', '')
+        if teacher_note:
+            trial_request.teacher_note = teacher_note       
+        trial_request.save()
+        return Response(TrialLessonRequestSerializer(trial_request).data)
+
+#-----------------------------AUTH----------------------------------------------
 
 class MeView(APIView):
     permission_classes = [AllowAny]
@@ -251,7 +302,6 @@ class LoginView(APIView):
         response = Response({"detail": "Logged in."}, status=status.HTTP_200_OK)
         get_token(request)
         return response
-
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

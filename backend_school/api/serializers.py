@@ -98,6 +98,7 @@ class TrialLessonRequestSerializer(serializers.ModelSerializer):
             'end_at',
             'status',
             'student_note',
+            'teacher_note',
             'admin_note',
             'zoom_join_url_student',
             'zoom_join_url_teacher',

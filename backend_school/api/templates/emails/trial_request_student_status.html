@@ -20,6 +20,9 @@
         {% if admin_note %}
         <p style="margin: 8px 0 0 0;"><strong>Admin note:</strong> {{ admin_note }}</p>
         {% endif %}
+        {% if teacher_note %}
+        <p style="margin: 8px 0 0 0;"><strong>Teacher note:</strong> {{ teacher_note }}</p>
+        {% endif %}
 
         <div style="margin-top: 24px;">
             <a href="{{ request_url }}" style="display:inline-block; padding: 12px 22px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">

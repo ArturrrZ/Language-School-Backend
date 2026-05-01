@@ -11,4 +11,6 @@ urlpatterns = [
     path('teachers/<int:teacher_id>/availability/', views.TeacherAvailabilityView.as_view(), name='teacher_availability'),
     path('trial-lessons/', views.TrialLessonRequestCreateView.as_view(), name='trial_lesson_create'),
     path('trial-lessons/my/', views.MyTrialLessonRequestListView.as_view(), name='my_trial_lessons'),
+    path('teacher/trial-lessons/', views.TeacherTrialLessonRequestListView.as_view(), name='teacher_trial_lessons'),
+    path('teacher/trial-lessons/<int:trial_request_id>/update/', views.TeacherTrialLessonRequestUpdateView.as_view(), name='teacher_trial_lesson_update'),
 ]

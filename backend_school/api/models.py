@@ -101,6 +101,7 @@ class TrialLessonRequest(models.Model):
 	end_at = models.DateTimeField()
 	status = models.CharField(max_length=32, choices=Status.choices, default=Status.PENDING)
 	student_note = models.TextField(blank=True)
+	teacher_note = models.TextField(blank=True)
 	admin_note = models.TextField(blank=True)
 	zoom_join_url_student = models.URLField(blank=True)
 	zoom_join_url_teacher = models.URLField(blank=True)

@@ -89,13 +89,23 @@ def _send_trial_status_student_email(trial_request: TrialLessonRequest, old_stat
         'old_status_label': dict(TrialLessonRequest.Status.choices).get(old_status, '—') if old_status else '—',
         'new_status_label': trial_request.get_status_display(),
         'admin_note': trial_request.admin_note,
+        'teacher_note': trial_request.teacher_note,
         'request_url': request_url,
     }
 
     html_message = render_to_string('emails/trial_request_student_status.html', context)
+    note_lines = []
+    if context['admin_note']:
+        note_lines.append(f'Admin note: {context["admin_note"]}')
+    if context['teacher_note']:
+        note_lines.append(f'Teacher note: {context["teacher_note"]}')
+
+    notes_block = f'\n{"\n".join(note_lines)}' if note_lines else ''
+
     plain_message = (
         f'Trial lesson request #{trial_request.id} status update: '
         f'{context["old_status_label"]} -> {context["new_status_label"]}.\n'
+        f'{notes_block}\n'
         f'Check details: {request_url}'
     )
 
