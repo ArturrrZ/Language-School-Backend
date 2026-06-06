@@ -2,8 +2,41 @@ from django.db.models.signals import post_save, post_delete, pre_save
 from django.db import transaction
 from django.dispatch import receiver
 from django.conf import settings
-from .models import TrialLessonRequest, Notification
+from django.core.cache import cache
+from .models import TrialLessonRequest, Notification, Teacher
 from .tasks import send_trial_status_email
+
+
+def _teacher_list_cache_key() -> str:
+    return getattr(settings, 'TEACHER_LIST_CACHE_KEY', 'teachers:list:v1')
+
+
+IGNORED_USER_UPDATE_FIELDS_FOR_TEACHER_LIST_CACHE = {'last_login'}
+
+
+@receiver(post_save, sender=Teacher)
+@receiver(post_delete, sender=Teacher)
+def invalidate_teacher_list_cache_on_teacher_change(sender, instance, **kwargs):
+    cache.delete(_teacher_list_cache_key())
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def invalidate_teacher_list_cache_on_user_save(sender, instance, created, **kwargs):
+    if not hasattr(instance, 'teacher_profile'):
+        return
+
+    update_fields = kwargs.get('update_fields')
+    if update_fields is not None:
+        if set(update_fields).issubset(IGNORED_USER_UPDATE_FIELDS_FOR_TEACHER_LIST_CACHE):
+            return
+
+    cache.delete(_teacher_list_cache_key())
+
+
+@receiver(post_delete, sender=settings.AUTH_USER_MODEL)
+def invalidate_teacher_list_cache_on_user_delete(sender, instance, **kwargs):
+    if hasattr(instance, 'teacher_profile'):
+        cache.delete(_teacher_list_cache_key())
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):

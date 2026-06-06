@@ -102,7 +102,7 @@ class TeacherListView(APIView):
         cache.set(
             cache_key,
             data,
-            timeout=getattr(settings, 'TEACHER_LIST_CACHE_TTL_SECONDS', 3000),
+            timeout=getattr(settings, 'TEACHER_LIST_CACHE_TTL_SECONDS', 7*24*60*60),
         )
         return Response(data)
 
