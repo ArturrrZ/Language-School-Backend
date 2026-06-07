@@ -82,7 +82,7 @@ def trial_lesson_request_post_save(sender, instance, created, **kwargs):
     old_teacher_note = getattr(instance, '_old_teacher_note', None)
     new_status = instance.status
 
-    status_changed = old_status != new_status
+    status_changed = old_status != new_status # instance.status != instance._old_status
     admin_note_changed = old_admin_note != instance.admin_note
     teacher_note_changed = old_teacher_note != instance.teacher_note
 
@@ -106,7 +106,7 @@ def trial_lesson_request_post_save(sender, instance, created, **kwargs):
             message=message,
         )
 
-    transaction.on_commit(
-        lambda: send_trial_status_email.delay(instance.id, old_status)
-    )
+        transaction.on_commit(
+            lambda: send_trial_status_email.delay(instance.id, old_status)
+        )
     

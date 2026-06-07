@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
-from .models import TrialLessonRequest
+from .models import FreeConsultationRequest, TrialLessonRequest
 
 
 logger = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ def _send_trial_status_student_email(trial_request: TrialLessonRequest, old_stat
     if context['teacher_note']:
         note_lines.append(f'Teacher note: {context["teacher_note"]}')
 
-    notes_block = f'\n{"\n".join(note_lines)}' if note_lines else ''
+    notes_block = ('\n' + '\n'.join(note_lines)) if note_lines else ''
 
     plain_message = (
         f'Trial lesson request #{trial_request.id} status update: '
@@ -115,6 +115,31 @@ def _send_trial_status_student_email(trial_request: TrialLessonRequest, old_stat
         html_message=html_message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[student_email],
+        fail_silently=False,
+    )
+
+
+def _send_free_consultation_admin_email(consultation_request: FreeConsultationRequest) -> None:
+    admin_email = getattr(
+        settings,
+        'FREE_CONSULTATION_NOTIFICATION_EMAIL',
+        getattr(settings, 'TRIAL_REQUEST_NOTIFICATION_EMAIL', ''),
+    )
+    if not admin_email:
+        logger.info('FREE_CONSULTATION_NOTIFICATION_EMAIL is empty. Admin email skipped.')
+        return
+
+    message = consultation_request.message or 'No message provided.'
+    send_mail(
+        subject='New free consultation request',
+        message=(
+            'A new free consultation request was submitted.\n\n'
+            f'Name: {consultation_request.name}\n'
+            f'Email: {consultation_request.email}\n\n'
+            f'Message:\n{message}'
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[admin_email],
         fail_silently=False,
     )
 
@@ -170,4 +195,25 @@ def send_trial_status_email(self, trial_request_id: int, old_status: str | None 
 
     _send_trial_status_student_email(trial_request, old_status=old_status)
     logger.info('Student status email sent for TrialLessonRequest #%s', trial_request_id)
+    return 'ok'
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={'max_retries': 5},
+)
+def send_free_consultation_admin_email(self, consultation_request_id: int) -> str:
+    consultation_request = FreeConsultationRequest.objects.filter(id=consultation_request_id).first()
+    if not consultation_request:
+        logger.warning(
+            'FreeConsultationRequest #%s not found. Admin email skipped.',
+            consultation_request_id,
+        )
+        return 'not_found'
+
+    _send_free_consultation_admin_email(consultation_request)
+    logger.info('Admin email sent for FreeConsultationRequest #%s', consultation_request_id)
     return 'ok'

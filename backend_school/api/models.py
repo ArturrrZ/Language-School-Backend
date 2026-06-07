@@ -141,3 +141,16 @@ class Notification(models.Model):
 
 	def __str__(self) -> str:
 		return f'Notification for {self.user} at {self.created_at}'
+
+
+class FreeConsultationRequest(models.Model):
+	name = models.CharField(max_length=255)
+	email = models.EmailField()
+	message = models.TextField(blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ('-created_at',)
+
+	def __str__(self) -> str:
+		return f'Free consultation request #{self.pk} from {self.name} <{self.email}>'

@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import Teacher, TeacherAvailability, TrialLessonRequest
+from .models import FreeConsultationRequest, Teacher, TeacherAvailability, TrialLessonRequest
 
 
 class TeacherSerializer(serializers.ModelSerializer):
@@ -152,3 +152,10 @@ class MeSerializer(serializers.Serializer):
         if request:
             return request.build_absolute_uri(obj.profile_picture.url)
         return obj.profile_picture.url
+
+
+class FreeConsultationRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FreeConsultationRequest
+        fields = ('id', 'name', 'email', 'message', 'created_at')
+        read_only_fields = ('id', 'created_at')

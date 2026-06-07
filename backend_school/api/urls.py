@@ -13,4 +13,5 @@ urlpatterns = [
     path('trial-lessons/my/', views.MyTrialLessonRequestListView.as_view(), name='my_trial_lessons'),
     path('teacher/trial-lessons/', views.TeacherTrialLessonRequestListView.as_view(), name='teacher_trial_lessons'),
     path('teacher/trial-lessons/<int:trial_request_id>/update/', views.TeacherTrialLessonRequestUpdateView.as_view(), name='teacher_trial_lesson_update'),
+    path('free-consultations/', views.FreeConsultationRequestCreateView.as_view(), name='free_consultation_create'),
 ]

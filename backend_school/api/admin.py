@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import Teacher, TeacherAvailability, TrialLessonRequest, User, Notification
+from .models import FreeConsultationRequest, Teacher, TeacherAvailability, TrialLessonRequest, User, Notification
 
 
 @admin.register(User)
@@ -79,3 +79,10 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'type', 'message', 'is_read', 'created_at')
     list_filter = ('type', 'is_read', 'created_at')
     search_fields = ('user__username', 'user__email', 'message')
+
+
+@admin.register(FreeConsultationRequest)
+class FreeConsultationRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'email', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('name', 'email', 'message')

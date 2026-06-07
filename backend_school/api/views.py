@@ -15,9 +15,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .services import create_trial_lesson_request
 from .models import Teacher, TeacherAvailability, TrialLessonRequest
+from .tasks import send_free_consultation_admin_email
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import (
     AvailableSlotSerializer,
+    FreeConsultationRequestSerializer,
     MeSerializer,
     TeacherAvailabilitySerializer,
     TeacherSerializer,
@@ -86,7 +88,7 @@ def _get_available_slots(teacher, target_date, slot_minutes=45, buffer_minutes=1
             current = current + slot_delta + buffer_delta
 
     return available_slots
-
+#
 class TeacherListView(APIView):
     permission_classes = [AllowAny]
 
@@ -314,4 +316,22 @@ class LogoutView(APIView):
         auth_logout(request)
         response = Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
         return response
+
+
+class FreeConsultationRequestCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = FreeConsultationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        consultation_request = serializer.save()
+        send_free_consultation_admin_email.delay(consultation_request.id)
+
+        return Response(
+            {
+                'detail': 'Free consultation request submitted successfully.',
+                'request': FreeConsultationRequestSerializer(consultation_request).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
     
