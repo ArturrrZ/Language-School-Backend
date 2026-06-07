@@ -157,5 +157,5 @@ class MeSerializer(serializers.Serializer):
 class FreeConsultationRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = FreeConsultationRequest
-        fields = ('id', 'name', 'email', 'message', 'created_at')
+        fields = ('id', 'name', 'email', 'message', 'created_at', 'phone')
         read_only_fields = ('id', 'created_at')

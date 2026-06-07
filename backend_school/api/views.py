@@ -317,6 +317,7 @@ class LogoutView(APIView):
         response = Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
         return response
 
+#-----------------------------Free Consultation----------------------------------------------
 
 class FreeConsultationRequestCreateView(APIView):
     permission_classes = [AllowAny]
