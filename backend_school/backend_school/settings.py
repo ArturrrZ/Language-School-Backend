@@ -137,6 +137,11 @@ SESSION_SAVE_EVERY_REQUEST = True
 # CSRF cookie settings
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'Lax' if DEBUG else 'None'
+CSRF_TRUSTED_ORIGINS = [
+    os.getenv('FRONT_SITE_ORIGIN', 'http://127.0.0.1:3000'),
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
 
 # Cache (LocMem in dev, Redis when REDIS_URL is provided)
 REDIS_URL = os.getenv('REDIS_URL')
