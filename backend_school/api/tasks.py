@@ -135,6 +135,7 @@ def _send_free_consultation_admin_email(consultation_request: FreeConsultationRe
         message=(
             'A new free consultation request was submitted.\n\n'
             f'Name: {consultation_request.name}\n'
+            f'Phone: {consultation_request.phone}\n'
             f'Email: {consultation_request.email}\n\n'
             f'Message:\n{message}'
         ),
