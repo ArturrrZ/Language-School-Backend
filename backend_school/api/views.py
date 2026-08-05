@@ -99,7 +99,7 @@ class TeacherListView(APIView):
             return Response(cached_data)
         print("DB QUERY: Fetching teachers from database")
         teachers = Teacher.objects.select_related('user').all()
-        serializer = TeacherSerializer(teachers, many=True)
+        serializer = TeacherSerializer(teachers, many=True, context={'request': request})
         data = serializer.data
         cache.set(
             cache_key,
