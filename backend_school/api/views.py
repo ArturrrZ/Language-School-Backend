@@ -196,6 +196,28 @@ class MyTrialLessonRequestListView(APIView):
         return Response(serializer.data)
 
 
+class StudentTrialLessonCancelView(APIView):
+    """Allow a student to cancel their own trial lesson request.
+
+    Only requests in occupied statuses (pending/teacher_confirmed/admin_approved)
+    can be cancelled by the student.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, trial_request_id: int):
+        trial_request = TrialLessonRequest.objects.filter(
+            id=trial_request_id,
+            student=request.user,
+            status__in=OCCUPIED_TRIAL_LESSON_STATUSES,
+        ).first()
+        if not trial_request:
+            return Response({'detail': 'Trial lesson request not found or cannot be cancelled.'}, status=status.HTTP_404_NOT_FOUND)
+
+        trial_request.status = TrialLessonRequest.Status.CANCELLED
+        trial_request.save()
+        return Response(TrialLessonRequestSerializer(trial_request).data)
+
+
 
 #-----------------------------Teacher----------------------------------------------
 

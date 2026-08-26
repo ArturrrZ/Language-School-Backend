@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Trial Lesson Status Update</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #222; }
+      .container { max-width: 680px; margin: 0 auto; padding: 20px; }
+      .header { background:#f5f7fa; padding:16px; border-radius:6px; }
+      .content { margin-top:16px; }
+      .meta { color:#666; font-size:14px; margin-top:8px }
+      .notes { background:#fafafa; border:1px solid #eee; padding:12px; margin-top:12px; white-space:pre-wrap }
+      .footer { margin-top:20px; color:#888; font-size:13px }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h2>Trial Lesson — Status Update</h2>
+      </div>
+
+      <div class="content">
+        <p>Hi {{ teacher_name }},</p>
+
+        <p>The trial lesson request <strong>#{{ trial_request_id }}</strong> with <strong>{{ student_name }}</strong> has changed status.</p>
+
+        <p class="meta"><strong>Previous status:</strong> {{ old_status_label }}<br>
+        <strong>New status:</strong> {{ new_status_label }}</p>
+
+        <p><strong>Lesson:</strong> {{ start_at }} — {{ end_at }}</p>
+
+        {% if student_note or teacher_note or admin_note %}
+          <div class="notes">
+            {% if student_note %}
+              <p><strong>Student note:</strong><br>{{ student_note }}</p>
+            {% endif %}
+            {% if teacher_note %}
+              <p><strong>Teacher note:</strong><br>{{ teacher_note }}</p>
+            {% endif %}
+            {% if admin_note %}
+              <p><strong>Admin note:</strong><br>{{ admin_note }}</p>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <p>You can view the request list for teachers here:<br>
+          <a href="{{ request_url }}">View trial lesson requests</a>
+        </p>
+
+        <div class="footer">
+          <p>This is an automated message. Replying to this email may not be monitored.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

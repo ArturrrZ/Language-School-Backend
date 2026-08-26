@@ -17,6 +17,7 @@ urlpatterns = [
     #teacher endpoints
     path('teacher/trial-lessons/', views.TeacherTrialLessonRequestListView.as_view(), name='teacher_trial_lessons'),
     path('teacher/trial-lessons/<int:trial_request_id>/update/', views.TeacherTrialLessonRequestUpdateView.as_view(), name='teacher_trial_lesson_update'),
+    path('trial-lessons/<int:trial_request_id>/cancel/', views.StudentTrialLessonCancelView.as_view(), name='student_trial_lesson_cancel'),
     #free consultation endpoints
     path('free-consultations/', views.FreeConsultationRequestCreateView.as_view(), name='free_consultation_create'),
 ]
