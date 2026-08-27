@@ -2,7 +2,10 @@ from django.test import TestCase, TransactionTestCase
 from django.utils import timezone
 from datetime import timedelta, time
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -325,3 +328,43 @@ class ApiUrlsCoverageTests(APITestCase):
 		)
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertEqual(response.data.get('detail'), 'Free consultation request submitted successfully.')
+
+	def test_forgot_password_request_and_confirm_urls(self):
+		request_response = self.client.post(
+			reverse('forgot_password_request'),
+			{'email': self.student.email},
+			format='json',
+		)
+		self.assertEqual(request_response.status_code, status.HTTP_200_OK)
+		self.assertIn('detail', request_response.data)
+
+		uid = urlsafe_base64_encode(force_bytes(self.student.pk))
+		token = default_token_generator.make_token(self.student)
+		confirm_response = self.client.post(
+			reverse('forgot_password_confirm'),
+			{
+				'uid': uid,
+				'token': token,
+				'new_password': 'newStrongPass123!',
+			},
+			format='json',
+		)
+		self.assertEqual(confirm_response.status_code, status.HTTP_200_OK)
+
+		login_with_new_password = self.client.post(
+			reverse('login'),
+			{'username': self.student.username, 'password': 'newStrongPass123!'},
+			format='json',
+		)
+		self.assertEqual(login_with_new_password.status_code, status.HTTP_200_OK)
+
+		invalid_token_response = self.client.post(
+			reverse('forgot_password_confirm'),
+			{
+				'uid': uid,
+				'token': 'invalid-token',
+				'new_password': 'anotherStrongPass123!',
+			},
+			format='json',
+		)
+		self.assertEqual(invalid_token_response.status_code, status.HTTP_400_BAD_REQUEST)

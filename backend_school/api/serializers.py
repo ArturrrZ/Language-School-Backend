@@ -1,3 +1,4 @@
+from django.contrib.auth import password_validation
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -159,3 +160,17 @@ class FreeConsultationRequestSerializer(serializers.ModelSerializer):
         model = FreeConsultationRequest
         fields = ('id', 'name', 'email', 'message', 'created_at', 'phone')
         read_only_fields = ('id', 'created_at')
+
+
+class ForgotPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class ForgotPasswordConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+
+    def validate_new_password(self, value):
+        password_validation.validate_password(value)
+        return value

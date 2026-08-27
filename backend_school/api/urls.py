@@ -8,6 +8,8 @@ urlpatterns = [
     path('auth/login/', views.LoginView.as_view(), name='login'),
     path('auth/logout/', views.LogoutView.as_view(), name='logout'),
     path('auth/me/', views.MeView.as_view(), name='me'),
+    path('auth/forgot-password/', views.ForgotPasswordRequestView.as_view(), name='forgot_password_request'),
+    path('auth/reset-password/', views.ForgotPasswordConfirmView.as_view(), name='forgot_password_confirm'),
     #get all teachers and their availability
     path('teachers/', views.TeacherListView.as_view(), name='teacher_list'),
     path('teachers/<int:teacher_id>/availability/', views.TeacherAvailabilityView.as_view(), name='teacher_availability'),

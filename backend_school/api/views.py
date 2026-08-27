@@ -6,9 +6,14 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.middleware.csrf import get_token
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_str
 from django.utils.decorators import method_decorator
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils import timezone
+from django.core.mail import send_mail
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -19,6 +24,8 @@ from .tasks import send_free_consultation_admin_email
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import (
     AvailableSlotSerializer,
+    ForgotPasswordConfirmSerializer,
+    ForgotPasswordRequestSerializer,
     FreeConsultationRequestSerializer,
     MeSerializer,
     TeacherAvailabilitySerializer,
@@ -338,6 +345,72 @@ class LogoutView(APIView):
         auth_logout(request)
         response = Response({"detail": "Logged out."}, status=status.HTTP_200_OK)
         return response
+
+
+class ForgotPasswordRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email'].strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+
+        response_payload = {'detail': 'If this email exists, password reset instructions were sent.'}
+
+        if not user:
+            return Response(response_payload, status=status.HTTP_200_OK)
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        front_origin = getattr(settings, 'FRONT_SITE_ORIGIN', 'http://127.0.0.1:3000').rstrip('/')
+        reset_link = f'{front_origin}/forgot-password?uid={uid}&token={token}'
+
+        html_message = render_to_string(
+            'emails/password_reset_email.html',
+            {
+                'username': user.get_full_name() or user.username,
+                'reset_link': reset_link,
+            },
+        )
+
+        send_mail(
+            subject='Password reset instructions',
+            message=f'Reset your password: {reset_link}',
+            html_message=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        return Response(response_payload, status=status.HTTP_200_OK)
+
+
+class ForgotPasswordConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        uid = serializer.validated_data['uid']
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['new_password']
+
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except Exception:
+            return Response({'detail': 'Invalid reset link.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({'detail': 'Reset link is invalid or expired.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save(update_fields=['password'])
+        return Response({'detail': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
 
 #-----------------------------Free Consultation----------------------------------------------
 
