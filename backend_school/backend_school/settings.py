@@ -1,5 +1,6 @@
 
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -198,3 +199,15 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+
+# Test-safe defaults: never send real emails or enqueue real Celery tasks.
+IS_TEST_ENV = ('test' in sys.argv) or ('PYTEST_CURRENT_TEST' in os.environ)
+if IS_TEST_ENV:
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
+    # Execute tasks synchronously in the test process instead of broker/worker.
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+    CELERY_BROKER_URL = 'memory://'
+    CELERY_RESULT_BACKEND = 'cache+memory://'
