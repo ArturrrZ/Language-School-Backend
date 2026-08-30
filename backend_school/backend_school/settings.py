@@ -1,9 +1,10 @@
-
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
 
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
@@ -12,15 +13,36 @@ load_dotenv(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5p+p=m9@gmr7d#d@&u0k=$ca=fv5maqs6uvw1!cnm&a*tvxokk'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true'
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'unsafe-development-secret-key'
+    else:
+        raise ImproperlyConfigured('SECRET_KEY environment variable is required.')
 
 
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        'ALLOWED_HOSTS',
+        'localhost,127.0.0.1',
+    ).split(',')
+    if host.strip()
+]
+
+railway_public_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+
+if (
+    railway_public_domain
+    and railway_public_domain not in ALLOWED_HOSTS
+):
+    ALLOWED_HOSTS.append(railway_public_domain)
 # Application definition
 
 INSTALLED_APPS = [
