@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'anymail',
     'rest_framework',
     'django_celery_beat',
     'django_celery_results',
@@ -146,7 +147,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STORAGES = {
     'default': {
@@ -175,6 +176,16 @@ REST_FRAMEWORK = {
     ),
 }
 
+FRONT_SITE_ORIGIN = os.getenv(
+    'FRONT_SITE_ORIGIN',
+    'http://127.0.0.1:3000',
+).rstrip('/')
+
+SITE_ORIGIN = os.getenv(
+    'SITE_ORIGIN',
+    'http://127.0.0.1:8000',
+).rstrip('/')
+
 # Session cookie settings
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = not DEBUG
@@ -184,20 +195,27 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-    os.getenv('FRONT_SITE_ORIGIN', 'https://language-school-mu.vercel.app'),
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    FRONT_SITE_ORIGIN,
+]
+CSRF_TRUSTED_ORIGINS = [
+    FRONT_SITE_ORIGIN,
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+if DEBUG:
+    LOCAL_FRONTEND_ORIGINS = [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ]
+
+    CORS_ALLOWED_ORIGINS.extend(LOCAL_FRONTEND_ORIGINS)
+    CSRF_TRUSTED_ORIGINS.extend(LOCAL_FRONTEND_ORIGINS)
 
 # CSRF cookie settings
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'Lax' if DEBUG else 'None'
-CSRF_TRUSTED_ORIGINS = [
-    os.getenv('FRONT_SITE_ORIGIN', 'https://language-school-mu.vercel.app'),
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-]
 
 # Cache (LocMem in dev, Redis when REDIS_URL is provided)
 REDIS_URL = os.getenv('REDIS_URL')
@@ -216,7 +234,7 @@ else:
         }
     }
 
-TEACHER_LIST_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60  # 24 hours
+TEACHER_LIST_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60  # 7 days
 TEACHER_LIST_CACHE_KEY = 'teachers:list:v2'
 TRIAL_LESSON_SLOT_MINUTES = 45
 TRIAL_LESSON_BUFFER_MINUTES = 15
@@ -228,7 +246,10 @@ TRIAL_LESSON_BUFFER_MINUTES = 15
 # EMAIL_HOST_USER=you@example.com
 # EMAIL_HOST_PASSWORD=app-password
 # EMAIL_USE_TLS=True
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.smtp.EmailBackend',
+)
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
@@ -237,14 +258,29 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '20'))
 
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+ANYMAIL = {
+    'RESEND_API_KEY': RESEND_API_KEY,
+}
+
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-reply@example.com')
 TRIAL_REQUEST_NOTIFICATION_EMAIL = os.getenv('TRIAL_REQUEST_NOTIFICATION_EMAIL', EMAIL_HOST_USER)
 
-SITE_ORIGIN = os.getenv('SITE_ORIGIN', 'http://127.0.0.1:8000')
-FRONT_SITE_ORIGIN = os.getenv('FRONT_SITE_ORIGIN', 'https://language-school-mu.vercel.app')
+# Reverse proxy / HTTPS (Railway)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SECURE_SSL_REDIRECT = os.getenv(
+    'SECURE_SSL_REDIRECT',
+    'false' if DEBUG else 'true',
+).lower() == 'true'
 
 # Celery
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL') or os.getenv('CELERY_BROKER_REDIS_URL') or 'redis://redis:6379/0'
+CELERY_BROKER_URL = (
+    os.getenv('CELERY_BROKER_URL')
+    or os.getenv('CELERY_BROKER_REDIS_URL')
+    or REDIS_URL
+    or 'redis://redis:6379/0'
+)
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'django-db')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
