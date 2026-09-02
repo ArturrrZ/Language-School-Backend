@@ -145,6 +145,41 @@ def _send_free_consultation_admin_email(consultation_request: FreeConsultationRe
     )
 
 
+def _send_welcome_email(user_id: int) -> str:
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        logger.warning('User #%s not found. Welcome email skipped.', user_id)
+        return 'not_found'
+
+    if not user.email:
+        logger.info('User #%s has no email. Welcome email skipped.', user_id)
+        return 'no_email'
+
+    front_origin = getattr(settings, 'FRONT_SITE_ORIGIN', 'http://127.0.0.1:3000').rstrip('/')
+    context = {
+        'username': user.get_full_name() or user.username,
+        'front_origin': front_origin,
+    }
+    html_message = render_to_string('emails/welcome_email.html', context)
+
+    send_mail(
+        subject='Welcome to our language school!',
+        message=(
+            f'Hi {context["username"]}!\n\n'
+            'Welcome to our language school. Your account is ready.\n'
+            f'Go to: {front_origin}'
+        ),
+        html_message=html_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
+    return 'ok'
+
+
 
 
 @shared_task
@@ -218,3 +253,17 @@ def send_free_consultation_admin_email(self, consultation_request_id: int) -> st
     _send_free_consultation_admin_email(consultation_request)
     logger.info('Admin email sent for FreeConsultationRequest #%s', consultation_request_id)
     return 'ok'
+
+
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={'max_retries': 5},
+)
+def send_welcome_email(self, user_id: int) -> str:
+    result = _send_welcome_email(user_id)
+    if result == 'ok':
+        logger.info('Welcome email sent for user #%s', user_id)
+    return result

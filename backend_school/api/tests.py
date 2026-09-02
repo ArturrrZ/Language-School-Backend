@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import timedelta, time
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -226,12 +227,16 @@ class ApiUrlsCoverageTests(APITestCase):
 		self.assertEqual(me_anon.status_code, status.HTTP_200_OK)
 		self.assertEqual(me_anon.data.get('auth'), False)
 
+		mail.outbox = []
 		register_response = self.client.post(
 			reverse('register'),
 			{'username': 'new_user', 'email': 'new_user@example.com', 'password': 'pass12345'},
 			format='json',
 		)
 		self.assertEqual(register_response.status_code, status.HTTP_201_CREATED)
+		self.assertEqual(len(mail.outbox), 1)
+		self.assertEqual(mail.outbox[0].to, ['new_user@example.com'])
+		self.assertIn('Welcome', mail.outbox[0].subject)
 
 		login_response = self.client.post(
 			reverse('login'),

@@ -20,7 +20,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .services import create_trial_lesson_request
 from .models import Teacher, TeacherAvailability, TrialLessonRequest
-from .tasks import send_free_consultation_admin_email
+from .tasks import send_free_consultation_admin_email, send_welcome_email
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import (
     AvailableSlotSerializer,
@@ -312,6 +312,7 @@ class RegisterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         user = User.objects.create_user(username=username, email=email, password=password)
+        send_welcome_email.delay(user.id)
         auth_login(request, user)
         response = Response({"detail": "Registered."}, status=status.HTTP_201_CREATED)
         get_token(request)
