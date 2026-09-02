@@ -13,3 +13,4 @@ dj-database-url>=2.2,<4.0
 psycopg[binary]>=3.2,<4.0
 django-cors-headers>=4.7,<5.0
 django-anymail[resend]>=15.0,<16.0
+django-storages[s3]>=1.14,<2.0

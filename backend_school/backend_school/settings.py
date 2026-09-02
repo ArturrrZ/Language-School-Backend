@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_celery_beat',
     'django_celery_results',
+    'storages',
     'api',
 ]
 
@@ -157,6 +158,27 @@ STORAGES = {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
+
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+
+if AWS_STORAGE_BUCKET_NAME:
+    STORAGES['default'] = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            'bucket_name': AWS_STORAGE_BUCKET_NAME,
+            'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
+            'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+            'endpoint_url': os.getenv('AWS_S3_ENDPOINT_URL'),
+            'region_name': os.getenv('AWS_S3_REGION_NAME', 'auto'),
+            'signature_version': 's3v4',
+            'addressing_style': 'virtual',
+            'default_acl': None,
+            'querystring_auth': True,
+            'querystring_expire': 3600,
+            'file_overwrite': False,
+        },
+    }
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -234,7 +256,7 @@ else:
         }
     }
 
-TEACHER_LIST_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60  # 7 days
+TEACHER_LIST_CACHE_TTL_SECONDS = 30 * 60  # 30 minutes
 TEACHER_LIST_CACHE_KEY = 'teachers:list:v2'
 TRIAL_LESSON_SLOT_MINUTES = 45
 TRIAL_LESSON_BUFFER_MINUTES = 15
