@@ -76,7 +76,7 @@ def _send_trial_status_student_email(trial_request: TrialLessonRequest, old_stat
         return
 
     origin = getattr(settings, 'FRONT_SITE_ORIGIN', 'http://127.0.0.1:3000').rstrip('/')
-    request_url = f'{origin}/api/trial-lessons/my/'
+    request_url = f'{origin}/api/profile/'
     teacher_name = trial_request.teacher.user.get_full_name() or trial_request.teacher.user.username
     context = {
         'trial_request_id': trial_request.id,
