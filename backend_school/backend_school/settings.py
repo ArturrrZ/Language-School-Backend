@@ -238,6 +238,7 @@ if DEBUG:
 # CSRF cookie settings
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = 'Lax' if DEBUG else 'None'
+CSRF_COOKIE_DOMAIN = os.getenv('CSRF_COOKIE_DOMAIN') or None
 
 # Cache (LocMem in dev, Redis when REDIS_URL is provided)
 REDIS_URL = os.getenv('REDIS_URL')
